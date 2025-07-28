@@ -3,7 +3,8 @@ from sqlalchemy.orm import Session
 from database import SessionLocal
 from schemas.schemas import VoterResponse, VoterCreate
 from typing import List
-import models
+from models import Voter 
+
 
 router = APIRouter()
 
@@ -17,10 +18,10 @@ def get_db():
 
 @router.post("/", response_model=VoterResponse)
 def create_voter(voter: VoterCreate, db: Session = Depends(get_db)):
-    existing = db.query(models.Voter).filter(models.Voter.email == voter.email).first()
+    existing = db.query(Voter).filter(Voter.email == voter.email).first()
     if existing:
         raise HTTPException(status_code=400, detail="Correo ya registrado.")
-    db_voter = models.Voter(**voter.dict())
+    db_voter = Voter(**voter.dict())
     db.add(db_voter)
     db.commit()
     db.refresh(db_voter)
@@ -29,12 +30,12 @@ def create_voter(voter: VoterCreate, db: Session = Depends(get_db)):
 
 @router.get("/", response_model=list[VoterResponse])
 def list_voters(db: Session = Depends(get_db)):
-    return db.query(models.Voter).all()
+    return db.query(Voter).all()
 
 
 @router.get("/{voter_id}", response_model=VoterResponse)
 def get_voter(voter_id: int, db: Session = Depends(get_db)):
-    voter = db.query(models.Voter).get(voter_id)
+    voter = db.query(Voter).get(voter_id)
     if not voter:
         raise HTTPException(status_code=404, detail="Votante no encontrado.")
     return voter
@@ -42,7 +43,7 @@ def get_voter(voter_id: int, db: Session = Depends(get_db)):
 
 @router.delete("/{voter_id}")
 def delete_voter(voter_id: int, db: Session = Depends(get_db)):
-    voter = db.query(models.Voter).get(voter_id)
+    voter = db.query(Voter).get(voter_id)
     if not voter:
         raise HTTPException(status_code=404, detail="Votante no encontrado.")
     db.delete(voter)

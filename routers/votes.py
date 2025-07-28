@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from database import SessionLocal
 from schemas.schemas import VoteCreate, VoteResponse
-import models
+from models import Voter, Candidate, Vote
 
 router = APIRouter()
 
@@ -16,8 +16,8 @@ def get_db():
 
 @router.post("/", response_model=VoteResponse)
 def cast_vote(vote: VoteCreate, db: Session = Depends(get_db)):
-    voter = db.query(models.Voter).get(vote.voter_id)
-    candidate = db.query(models.Candidate).get(vote.candidate_id)
+    voter = db.query(Voter).get(vote.voter_id)
+    candidate = db.query(Candidate).get(vote.candidate_id)
 
     if not voter or not candidate:
         raise HTTPException(status_code=404, detail="Votante o candidato no encontrado.")
@@ -25,7 +25,7 @@ def cast_vote(vote: VoteCreate, db: Session = Depends(get_db)):
     if voter.has_voted:
         raise HTTPException(status_code=400, detail="Este votante ya ha votado.")
 
-    db_vote = models.Vote(voter_id=vote.voter_id, candidate_id=vote.candidate_id)
+    db_vote = Vote(voter_id=vote.voter_id, candidate_id=vote.candidate_id)
     db.add(db_vote)
 
     voter.has_voted = True
@@ -38,12 +38,12 @@ def cast_vote(vote: VoteCreate, db: Session = Depends(get_db)):
 
 @router.get("/", response_model=list[VoteResponse])
 def list_votes(db: Session = Depends(get_db)):
-    return db.query(models.Vote).all()
+    return db.query(Vote).all()
 
 
 @router.get("/statistics")
 def vote_statistics(db: Session = Depends(get_db)):
-    candidates = db.query(models.Candidate).all()
+    candidates = db.query(Candidate).all()
     total_votes = sum(c.votes_count for c in candidates)
     stats = []
 
@@ -56,8 +56,8 @@ def vote_statistics(db: Session = Depends(get_db)):
             "percentage": round(percent, 2)
         })
 
-    total_voters = db.query(models.Voter).count()
-    voters_who_voted = db.query(models.Voter).filter(models.Voter.has_voted == True).count()
+    total_voters = db.query(Voter).count()
+    voters_who_voted = db.query(Voter).filter(Voter.has_voted == True).count()
 
     return {
         "total_votes": total_votes,
