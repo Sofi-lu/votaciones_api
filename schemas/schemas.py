@@ -22,6 +22,7 @@ class VoterResponse(VoterBase):
 class CandidateBase(BaseModel):
     name: str
     party: str
+    email: EmailStr
 
 class CandidateCreate(CandidateBase):
     pass

@@ -15,6 +15,7 @@ class Candidate(Base):
     id = Column(Integer, primary_key=True, index=True)
     name = Column(String, nullable=False)
     party = Column(String, nullable=True)
+    email = Column(String, unique=True, nullable=False)
     votes_count = Column(Integer, default=0)
     votes = relationship("Vote", back_populates="candidate")
 
