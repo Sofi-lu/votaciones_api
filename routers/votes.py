@@ -3,6 +3,8 @@ from sqlalchemy.orm import Session
 from database import SessionLocal
 from schemas.schemas import VoteCreate, VoteResponse
 from models import Voter, Candidate, Vote
+from utils.auth import verify_credentials
+
 
 router = APIRouter()
 
@@ -15,7 +17,7 @@ def get_db():
 
 
 @router.post("/", response_model=VoteResponse)
-def cast_vote(vote: VoteCreate, db: Session = Depends(get_db)):
+def cast_vote(vote: VoteCreate, db: Session = Depends(get_db),username: str = Depends(verify_credentials)):
     voter = db.query(Voter).get(vote.voter_id)
     candidate = db.query(Candidate).get(vote.candidate_id)
 
@@ -37,8 +39,9 @@ def cast_vote(vote: VoteCreate, db: Session = Depends(get_db)):
 
 
 @router.get("/", response_model=list[VoteResponse])
-def list_votes(db: Session = Depends(get_db)):
-    return db.query(Vote).all()
+def list_votes(skip: int = 0, limit: int = 10, db: Session = Depends(get_db)):
+    return db.query(Vote).offset(skip).limit(limit).all()
+
 
 
 @router.get("/statistics")

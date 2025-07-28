@@ -4,6 +4,9 @@ from database import SessionLocal
 from schemas.schemas import VoterResponse, VoterCreate
 from typing import List
 from models import Voter 
+from utils.auth import verify_credentials
+
+
 
 
 router = APIRouter()
@@ -17,7 +20,7 @@ def get_db():
 
 
 @router.post("/", response_model=VoterResponse)
-def create_voter(voter: VoterCreate, db: Session = Depends(get_db)):
+def create_voter(voter: VoterCreate, db: Session = Depends(get_db), username: str = Depends(verify_credentials)):
     existing = db.query(Voter).filter(Voter.email == voter.email).first()
     if existing:
         raise HTTPException(status_code=400, detail="Correo ya registrado.")
@@ -29,8 +32,9 @@ def create_voter(voter: VoterCreate, db: Session = Depends(get_db)):
 
 
 @router.get("/", response_model=list[VoterResponse])
-def list_voters(db: Session = Depends(get_db)):
-    return db.query(Voter).all()
+def list_voters(skip: int = 0, limit: int = 10, db: Session = Depends(get_db)):
+    return db.query(Voter).offset(skip).limit(limit).all()
+
 
 
 @router.get("/{voter_id}", response_model=VoterResponse)
@@ -42,7 +46,7 @@ def get_voter(voter_id: int, db: Session = Depends(get_db)):
 
 
 @router.delete("/{voter_id}")
-def delete_voter(voter_id: int, db: Session = Depends(get_db)):
+def delete_voter(voter_id: int, db: Session = Depends(get_db), username: str = Depends(verify_credentials)):
     voter = db.query(Voter).get(voter_id)
     if not voter:
         raise HTTPException(status_code=404, detail="Votante no encontrado.")
