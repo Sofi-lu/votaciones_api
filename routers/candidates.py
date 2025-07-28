@@ -3,7 +3,7 @@ from sqlalchemy.orm import Session
 from database import SessionLocal
 from schemas.schemas import CandidateCreate, CandidateResponse
 from typing import List
-from models import Candidate
+from models import Candidate, Voter
 
 router = APIRouter()
 
@@ -17,6 +17,12 @@ def get_db():
 
 @router.post("/", response_model=CandidateResponse)
 def create_candidate(candidate: CandidateCreate, db: Session = Depends(get_db)):
+    existing_voter = db.query(Voter).filter(Voter.email == candidate.email).first()
+    if existing_voter:
+        raise HTTPException(status_code=400, detail="Este email ya pertenece a un votante.")
+    existing_candidate = db.query(Candidate).filter(Candidate.email == candidate.email).first()
+    if existing_candidate:
+        raise HTTPException(status_code=400, detail="Este email ya está registrado como candidato.")
     db_candidate = Candidate(**candidate.dict())
     db.add(db_candidate)
     db.commit()
