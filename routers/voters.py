@@ -1,7 +1,8 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from database import SessionLocal
-import schemas
+from schemas.schemas import VoterResponse, VoterCreate
+from typing import List
 import models
 
 router = APIRouter()
@@ -14,8 +15,8 @@ def get_db():
         db.close()
 
 
-@router.post("/", response_model=schemas.VoterResponse)
-def create_voter(voter: schemas.VoterCreate, db: Session = Depends(get_db)):
+@router.post("/", response_model=VoterResponse)
+def create_voter(voter: VoterCreate, db: Session = Depends(get_db)):
     existing = db.query(models.Voter).filter(models.Voter.email == voter.email).first()
     if existing:
         raise HTTPException(status_code=400, detail="Correo ya registrado.")
@@ -26,12 +27,12 @@ def create_voter(voter: schemas.VoterCreate, db: Session = Depends(get_db)):
     return db_voter
 
 
-@router.get("/", response_model=list[schemas.VoterResponse])
+@router.get("/", response_model=list[VoterResponse])
 def list_voters(db: Session = Depends(get_db)):
     return db.query(models.Voter).all()
 
 
-@router.get("/{voter_id}", response_model=schemas.VoterResponse)
+@router.get("/{voter_id}", response_model=VoterResponse)
 def get_voter(voter_id: int, db: Session = Depends(get_db)):
     voter = db.query(models.Voter).get(voter_id)
     if not voter:

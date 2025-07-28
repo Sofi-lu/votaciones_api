@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from database import SessionLocal
-import schemas
+from schemas.schemas import VoteCreate, VoteResponse
 import models
 
 router = APIRouter()
@@ -14,8 +14,8 @@ def get_db():
         db.close()
 
 
-@router.post("/", response_model=schemas.VoteResponse)
-def cast_vote(vote: schemas.VoteCreate, db: Session = Depends(get_db)):
+@router.post("/", response_model=VoteResponse)
+def cast_vote(vote: VoteCreate, db: Session = Depends(get_db)):
     voter = db.query(models.Voter).get(vote.voter_id)
     candidate = db.query(models.Candidate).get(vote.candidate_id)
 
@@ -36,7 +36,7 @@ def cast_vote(vote: schemas.VoteCreate, db: Session = Depends(get_db)):
     return db_vote
 
 
-@router.get("/", response_model=list[schemas.VoteResponse])
+@router.get("/", response_model=list[VoteResponse])
 def list_votes(db: Session = Depends(get_db)):
     return db.query(models.Vote).all()
 
