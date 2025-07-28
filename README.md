@@ -49,12 +49,36 @@ Esta es una API RESTful construida con FastAPI para gestionar un sistema de vota
 ├── docs/
 │   ├── swagger_estadisticas.png
 │   ├── swagger_crear_votante.png
+├── utils/
+│   ├──auth.py
 └── README.md
 ```
 
 ## Autenticación
 
-Por ahora la API no requiere autenticación, pero se puede extender fácilmente con JWT o HTTP Basic Auth.
+La API ahora requiere **autenticación básica (HTTP Basic Auth)** para acceder a la mayoría de los endpoints protegidos como crear, eliminar o emitir votos.
+
+### Credenciales por defecto
+
+```
+Usuario: admin  
+Contraseña: admin123
+```
+
+Puedes modificarlas en el archivo `auth.py`.
+
+### Cómo autenticarse en Swagger UI
+
+1. Abre [http://localhost:8000/docs](http://localhost:8000/docs).
+2. Haz clic en el botón **"Authorize"** en la parte superior derecha.
+3. Ingresa las credenciales indicadas arriba.
+4. Ya puedes consumir los endpoints protegidos.
+
+### Ejemplo con `curl`
+
+```bash
+curl -u admin:admin123 http://localhost:8000/voters/
+```
 
 ## Ejemplos de uso con `curl`
 
@@ -86,3 +110,9 @@ curl http://localhost:8000/votes/statistics
 - [x] Estadísticas de votación
 - [x] Swagger UI para documentación automática
 - [x] Manejo de errores HTTP claros
+- [x] Autenticación HTTP Basic para proteger los endpoints
+- [x] Filtros de paginación (`skip`, `limit`) en las listas de votantes y candidatos
+- [x] Estructura RESTful organizada por rutas (`/voters`, `/candidates`, `/votes`)
+- [x] Validaciones con Pydantic para todos los esquemas
+- [x] Código organizado en módulos (routers, models, schemas, database)
+
